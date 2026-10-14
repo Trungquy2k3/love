@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Anh có điều muốn nói ❤️</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Be+Vietnam+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{--pink:#ff4d8d;--gold:#ffd27a;--violet:#9b5cff}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#05030f;font-family:'Be Vietnam Pro',system-ui,sans-serif;color:#fff}
+canvas{position:fixed;inset:0;width:100%;height:100%}
+#sky{z-index:0}#fx{z-index:2}
+/* Cảnh nền: núi + mặt hồ */
+#land{position:fixed;left:0;right:0;bottom:0;height:20vh;z-index:1;pointer-events:none;opacity:0;transition:opacity 3s}
+#land svg{position:absolute;bottom:42%;width:100%;height:60%}
+#land .lake{position:absolute;bottom:0;left:0;right:0;height:42%;background:linear-gradient(#2a1450,#0a0620)}
+#land .glow{position:absolute;bottom:35%;left:50%;width:60%;height:30%;transform:translateX(-50%);background:radial-gradient(ellipse,rgba(255,120,190,.5),transparent 70%)}
+body.night #land{opacity:1}
+/* Màn mở đầu */
+#intro{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;
+background:linear-gradient(160deg,#3b1a6e,#a8328b 40%,#2b3a8f 75%,#0e1b4d);background-size:200% 200%;animation:bgm 14s ease infinite;transition:opacity 2s ease}
+@keyframes bgm{50%{background-position:100% 100%}}
+#intro.out{opacity:0;pointer-events:none}
+#intro h1{font-family:'Dancing Script',cursive;font-size:clamp(34px,7vw,76px);text-shadow:0 0 24px rgba(255,255,255,.6);margin-bottom:14px;position:relative;z-index:2}
+#intro p{font-size:clamp(16px,2.4vw,22px);opacity:.9;margin-bottom:34px;position:relative;z-index:2}
+#go{position:relative;z-index:2;border:0;cursor:pointer;color:#fff;font:600 clamp(16px,2.2vw,20px) 'Be Vietnam Pro',sans-serif;letter-spacing:.08em;padding:18px 44px;border-radius:60px;
+background:linear-gradient(90deg,#ff2d75,#ff7a59);box-shadow:0 0 30px rgba(255,60,130,.7),0 0 70px rgba(255,60,130,.4);animation:beat 1.4s ease-in-out infinite;transition:transform .2s,box-shadow .2s}
+#go:hover{transform:scale(1.1);box-shadow:0 0 45px rgba(255,90,150,.95),0 0 100px rgba(255,60,130,.6)}
+#go:active{transform:scale(.92)}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.07)}30%{transform:scale(1)}45%{transform:scale(1.05)}}
+.fh{position:absolute;bottom:-40px;pointer-events:none;animation:rise linear infinite;filter:drop-shadow(0 0 6px #ff6aa8);z-index:1}
+@keyframes rise{to{transform:translateY(-115vh) rotate(25deg);opacity:0}}
+/* Nội dung chính */
+#stage{position:fixed;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;pointer-events:none}
+#title{font-family:'Dancing Script',cursive;font-weight:700;font-size:clamp(46px,13vw,150px);line-height:1.05;cursor:pointer;pointer-events:auto;
+background:linear-gradient(180deg,#fff 5%,#ffe38a 35%,#ff5d8f 70%,#e0143c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+filter:drop-shadow(0 0 14px rgba(255,80,140,.8)) drop-shadow(0 0 40px rgba(255,40,100,.5))}
+#title.pulse{animation:tp 1.6s ease-in-out infinite}
+@keyframes tp{0%,100%{transform:scale(1)}12%{transform:scale(1.045)}24%{transform:scale(1)}36%{transform:scale(1.03)}}
+#title span{display:inline-block;opacity:0;transform:translateY(24px) scale(.6);transition:opacity .7s,transform .7s}
+#title span.on{opacity:1;transform:none}
+.line{opacity:0;transform:translateY(14px);transition:opacity 1.6s,transform 1.6s;text-shadow:0 0 14px rgba(255,150,200,.7),0 2px 6px #000}
+.line.on{opacity:1;transform:none}
+#l2{font-size:clamp(17px,3vw,28px);margin-top:20px;font-weight:300}
+#l3{font-family:'Dancing Script',cursive;font-size:clamp(28px,5.5vw,56px);margin-top:14px;color:#ffd27a}
+#btns{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);z-index:6;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;opacity:0;transition:opacity 1.5s;pointer-events:none}
+#btns.on{opacity:1;pointer-events:auto}
+.b{border:1px solid rgba(255,255,255,.4);background:rgba(30,10,50,.55);backdrop-filter:blur(6px);color:#fff;padding:10px 20px;border-radius:30px;font:400 14px 'Be Vietnam Pro',sans-serif;cursor:pointer;transition:.2s}
+.b:hover{background:rgba(255,80,140,.5);transform:translateY(-2px)}
+#snd{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:14px;z-index:7;width:42px;height:42px;padding:0;font-size:18px;display:none}
+#toast{position:fixed;left:50%;top:18%;z-index:8;max-width:min(90vw,520px);transform:translate(-50%,-10px);opacity:0;transition:.8s;text-align:center;padding:16px 22px;border-radius:18px;
+background:rgba(40,10,60,.75);border:1px solid rgba(255,150,200,.5);box-shadow:0 0 30px rgba(255,80,140,.4);font-size:clamp(15px,2.4vw,19px);line-height:1.5;pointer-events:none}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+.tap{position:fixed;z-index:9;pointer-events:none;font-size:22px;animation:tapu 1.4s ease-out forwards}
+@keyframes tapu{to{transform:translate(var(--dx),-120px) scale(1.6);opacity:0}}
+@media (prefers-reduced-motion:reduce){#go,#title.pulse,#intro{animation:none}.fh{display:none}}
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+<div id="land"><div class="glow"></div><svg viewBox="0 0 100 30" preserveAspectRatio="none"><path d="M0 30V18L8 12 16 17 26 8 36 16 46 14 56 19 68 9 78 16 90 11 100 17V30Z" fill="#07041a"/></svg><div class="lake"></div></div>
+<canvas id="fx"></canvas>
+
+<div id="intro">
+  <h1 id="i1"></h1><p id="i2"></p>
+  <button id="go"></button>
+</div>
+
+<div id="stage">
+  <h2 id="title" aria-label="tỏ tình"></h2>
+  <p id="l2" class="line"></p>
+  <p id="l3" class="line"></p>
+</div>
+<div id="toast"></div>
+<div id="btns">
+  <button class="b" id="replay">↻ Xem lại màn trình diễn</button>
+  <button class="b" id="msg">💌 Gửi lời yêu thương</button>
+</div>
+<button class="b" id="snd" aria-label="Bật/tắt âm thanh">🔇</button>
+
+<script>
+/* ============ NỘI DUNG - dễ dàng chỉnh sửa tại đây ============ */
+const CONFIG = {
+  intro1: "Anh có một điều muốn nói với em...",
+  intro2: "Em đã sẵn sàng chưa? ❤️",
+  button: "BẤM VÀO ĐÂY ❤️",
+  title:  "ANH YÊU EM",
+  line2:  "Em là điều tuyệt vời nhất mà anh muốn giữ gìn.",
+  line3:  "❤️ Mãi bên anh nhé, Khánh Lyy ❤️",
+  messages: [
+    "Gặp em là điều may mắn nhất của anh. 💖",
+    "Mỗi ngày có em, anh đều thấy bầu trời thêm rực rỡ. ✨",
+    "Cảm ơn em đã đến và làm cuộc sống của anh dịu dàng hơn. 🌙",
+    "Dù pháo hoa có tàn, tình yêu anh dành cho em vẫn mãi sáng. ❤️"
+  ],
+  // Dán đường dẫn file nhạc MP3 của bạn vào đây (vd: "nhac.mp3"). Để trống = dùng giai điệu piano tự tạo.
+  MUSIC_URL: "snaptik.vn_7453272282736135442.mp3",
+  // Dữ liệu màu (hue HSL): hồng, đỏ, tím, vàng, xanh dương, trắng-hồng
+  hues: [335, 350, 285, 45, 215, 320]
+};
+
+/* ============ Tiện ích ============ */
+const $ = s => document.querySelector(s);
+const rand = (a, b) => a + Math.random() * (b - a);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const sky = $('#sky'), fx = $('#fx'), sc = sky.getContext('2d'), c = fx.getContext('2d');
+let W, H, dpr, running = false, active = false, timers = [];
+const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+
+function resize() {
+  dpr = Math.min(devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  [sky, fx].forEach(cv => { cv.width = W * dpr; cv.height = H * dpr; });
+  sc.setTransform(dpr, 0, 0, dpr, 0, 0); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  makeStars();
+}
+
+/* ============ Âm thanh (tự tổng hợp bằng WebAudio, không cần file) ============ */
+let actx = null, soundOn = false, musicTimer = null, audioEl = null;
+function initAudio() {
+  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); } catch (e) { actx = null; }
+}
+function tone(freq, dur, vol, type = 'sine', delay = 0) {
+  if (!actx || !soundOn) return;
+  const t = actx.currentTime + delay, o = actx.createOscillator(), g = actx.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g).connect(actx.destination); o.start(t); o.stop(t + dur + .05);
+}
+function noise(dur, vol, freq) {
+  if (!actx || !soundOn) return;
+  const n = actx.sampleRate * dur, buf = actx.createBuffer(1, n, actx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+  const s = actx.createBufferSource(), f = actx.createBiquadFilter(), g = actx.createGain();
+  s.buffer = buf; f.type = 'lowpass'; f.frequency.value = freq; g.gain.value = vol;
+  s.connect(f).connect(g).connect(actx.destination); s.start();
+}
+const sfxLaunch = () => tone(rand(500, 800), .5, .02, 'triangle');
+const sfxBoom = () => noise(.7, .07, 700);
+const sfxChime = i => tone(880 * Math.pow(1.122, i % 5), .6, .03, 'sine');
+function startMusic() {
+  stopMusic();
+  if (CONFIG.MUSIC_URL) { audioEl = audioEl || Object.assign(new Audio(CONFIG.MUSIC_URL), { loop: true, volume: .4 }); audioEl.play().catch(() => {}); return; }
+  const notes = [261.6, 329.6, 392, 523.3, 392, 329.6, 293.7, 349.2, 440, 587.3, 440, 349.2];
+  let i = 0;
+  musicTimer = setInterval(() => tone(notes[i++ % notes.length], 1.4, .025, 'sine'), 520);
+}
+function stopMusic() { clearInterval(musicTimer); if (audioEl) audioEl.pause(); }
+function setSound(on) {
+  soundOn = on; $('#snd').textContent = on ? '🔊' : '🔇';
+  if (on) { initAudio(); startMusic(); } else stopMusic();
+}
+
+/* ============ Nền sao, sao băng, bụi sáng ============ */
+let stars = [], shooters = [];
+function makeStars() {
+  const n = Math.round(W * H / 6000);
+  stars = Array.from({ length: n }, () => ({ x: rand(0, W), y: rand(0, H * .8), r: rand(.4, 1.5), p: rand(0, 6.28), s: rand(.01, .04) }));
+}
+let starBoost = 0.35;
+function drawSky(t) {
+  sc.clearRect(0, 0, W, H);
+  stars.forEach((s, i) => {
+    if (i > stars.length * starBoost) return;
+    const a = .4 + .6 * Math.abs(Math.sin(s.p + t * s.s * .06));
+    sc.fillStyle = `rgba(255,245,255,${a})`;
+    sc.beginPath(); sc.arc(s.x, s.y, s.r, 0, 6.28); sc.fill();
+  });
+  if (active && !reduce && Math.random() < .004) shooters.push({ x: rand(W * .3, W), y: rand(0, H * .3), vx: -rand(8, 12), vy: rand(3, 5), life: 1 });
+  shooters = shooters.filter(s => s.life > 0);
+  shooters.forEach(s => {
+    s.x += s.vx; s.y += s.vy; s.life -= .018;
+    const g = sc.createLinearGradient(s.x, s.y, s.x - s.vx * 8, s.y - s.vy * 8);
+    g.addColorStop(0, `rgba(255,255,255,${s.life})`); g.addColorStop(1, 'rgba(255,255,255,0)');
+    sc.strokeStyle = g; sc.lineWidth = 2; sc.beginPath(); sc.moveTo(s.x, s.y); sc.lineTo(s.x - s.vx * 8, s.y - s.vy * 8); sc.stroke();
+  });
+}
+
+/* ============ Hệ thống pháo hoa ============ */
+let parts = [], rockets = [], flashes = [];
+const MAXP = 3200;
+const SLOW = 0.6; // Hệ số tốc độ: 1 = nhanh như cũ, 0.6 = chậm hơn, 0.4 = rất chậm (áp dụng cả khi xem lại)
+const hsl = (h, l = 60, a = 1) => `hsla(${h},100%,${l}%,${a})`;
+// Đường cong tham số trái tim
+const heartPt = t => ({ x: 16 * Math.pow(Math.sin(t), 3), y: -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) });
+
+function addP(x, y, vx, vy, hue, o = {}) {
+  if (parts.length > MAXP) return;
+  parts.push({ x, y, vx, vy, hue, l: o.l || 60, size: o.size || rand(1, 2.4), life: 1, decay: o.decay || rand(.008, .016), fr: o.fr || .965, g: o.g == null ? .03 : o.g });
+}
+
+function launch(x, type, tx, ty) {
+  rockets.push({ x: x == null ? rand(W * .15, W * .85) : x, y: H, ty: ty == null ? rand(H * .12, H * .42) : ty, tx, vy: -rand(9, 12) * Math.max(.7, H / 800), type: type || pickType(), hue: CONFIG.hues[(Math.random() * CONFIG.hues.length) | 0] });
+  sfxLaunch();
+}
+function pickType() {
+  const r = Math.random();
+  return r < .3 ? 'heart' : r < .45 ? 'double' : r < .6 ? 'star' : r < .75 ? 'flower' : 'circle';
+}
+
+function explode(x, y, type, hue, big = 1) {
+  const m = Math.min(W, H), k = m * .00088 * big, n = reduce ? .5 : 1.5;
+  sfxBoom(); flashes.push({ x, y, r: m * .35 * big, a: .55, hue });
+  if (type === 'heart' || type === 'double') {
+    const layers = type === 'double' ? [[1.0, hue], [.55, (hue + 40) % 360], [.78, 45]] : [[1, hue], [.85, hue], [.7, 45]];
+    layers.forEach(([sc2, h]) => {
+      const N = Math.round(80 * n);
+      for (let i = 0; i < N; i++) {
+        const p = heartPt(i / N * 6.283);
+        addP(x, y, p.x * k * sc2, p.y * k * sc2, h + rand(-10, 10), { fr: .955, g: .012, decay: rand(.005, .008), size: rand(1.8, 3.6), l: rand(62, 88) });
+      }
+    });
+  } else {
+    const N = Math.round(140 * n);
+    for (let i = 0; i < N; i++) {
+      const a = i / N * 6.283;
+      let sp = rand(1.5, 8);
+      if (type === 'star') sp = 7 * (.55 + .45 * Math.cos(5 * a)) * rand(.95, 1);
+      if (type === 'flower') sp = 7 * Math.abs(Math.cos(3 * a)) + rand(0, .6);
+      if (type === 'circle') sp = rand(5.6, 7) * (Math.random() < .4 ? .6 : 1);
+      addP(x, y, Math.cos(a) * sp, Math.sin(a) * sp, hue + rand(-25, 25), { l: rand(62, 90), size: rand(1.6, 3.2), decay: rand(.006, .012) });
+    }
+  }
+}
+
+function updateFx() {
+  c.globalCompositeOperation = 'destination-out';
+  c.fillStyle = 'rgba(0,0,0,.14)'; c.fillRect(0, 0, W, H);
+  c.globalCompositeOperation = 'lighter';
+  flashes = flashes.filter(f => {
+    f.a -= .03; if (f.a <= 0) return false;
+    const g = c.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r);
+    g.addColorStop(0, hsl(f.hue, 80, f.a)); g.addColorStop(1, hsl(f.hue, 80, 0));
+    c.fillStyle = g; c.fillRect(f.x - f.r, f.y - f.r, f.r * 2, f.r * 2); return true;
+  });
+  rockets = rockets.filter(r => {
+    r.y += r.vy * SLOW; r.vy *= Math.pow(.985, SLOW); if (r.tx != null) r.x += (r.tx - r.x) * .03;
+    addP(r.x + rand(-1, 1), r.y, rand(-.3, .3), rand(.5, 1.5), 45, { size: 1.3, decay: .05, g: 0, l: 80 });
+    c.fillStyle = '#fff'; c.beginPath(); c.arc(r.x, r.y, 2.2, 0, 6.28); c.fill();
+    if (r.y <= r.ty || r.vy > -2) { explode(r.x, r.y, r.type, r.hue); return false; }
+    return true;
+  });
+  parts = parts.filter(p => {
+    p.vx *= Math.pow(p.fr, SLOW); p.vy *= Math.pow(p.fr, SLOW);
+    p.vy += p.g * SLOW; p.x += p.vx * SLOW; p.y += p.vy * SLOW;
+    p.life -= p.decay * SLOW;
+    if (p.life <= 0) return false;
+    const tw = p.life < .5 && Math.random() < .2 ? .4 : 1;
+    c.fillStyle = hsl(p.hue, p.l, p.life * tw);
+    const rad = p.size * (.6 + p.life * .7);
+    c.beginPath(); c.arc(p.x, p.y, rad, 0, 6.28); c.fill();
+    if (p.size > 1.6) { c.fillStyle = hsl(p.hue, 60, p.life * .18); c.beginPath(); c.arc(p.x, p.y, rad * 3.2, 0, 6.28); c.fill(); }
+    return true;
+  });
+  c.globalCompositeOperation = 'source-over';
+}
+
+/* ============ Vòng lặp chính ============ */
+let last = 0, nextShot = 0;
+function frame(t) {
+  if (!running) return;
+  try {
+    drawSky(t); updateFx();
+    if (active && t > nextShot) {
+      launch(); if (Math.random() < .3) launch();
+      nextShot = t + rand(400, 1000);
+    }
+  } catch (e) { console.error(e); }
+  requestAnimationFrame(frame);
+}
+function loop() { if (!running) { running = true; requestAnimationFrame(frame); } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) { running = false; if (actx) actx.suspend(); } else { loop(); if (actx && soundOn) actx.resume(); } });
+
+/* ============ Chữ tỏ tình ============ */
+function buildTitle() {
+  const el = $('#title'); el.innerHTML = '';
+  [...CONFIG.title].forEach(ch => { const s = document.createElement('span'); s.innerHTML = ch === ' ' ? '&nbsp;' : ch; el.appendChild(s); });
+}
+function typeTitle(done) {
+  const sp = [...$('#title').children];
+  sp.forEach((s, i) => later(() => { s.classList.add('on'); sfxChime(i); if (!reduce) sparkle(s); }, i * (reduce ? 0 : 220)));
+  later(done, sp.length * (reduce ? 0 : 220) + 600);
+}
+// Hạt sáng bay quanh chữ
+function sparkle(el) {
+  const r = el.getBoundingClientRect();
+  for (let i = 0; i < 14; i++) addP(r.left + r.width / 2, r.top + r.height / 2, rand(-2, 2), rand(-2.5, 1), CONFIG.hues[i % 6], { size: rand(1, 2), decay: .02, g: .02, l: 75 });
+}
+
+/* ============ Trình tự màn trình diễn ============ */
+function sequence() {
+  clearTimers(); active = false;
+  parts = []; rockets = [];
+  [...$('#title').children].forEach(s => s.classList.remove('on'));
+  ['#l2', '#l3'].forEach(s => $(s).classList.remove('on'));
+  $('#title').classList.remove('pulse'); $('#btns').classList.remove('on');
+  document.body.classList.add('night'); starBoost = 1;
+  const cx = W / 2, cy = H * .38;
+  // Giai đoạn 2: pháo hoa khai màn
+  later(() => { active = true; launch(W * .3); }, 1500);
+  later(() => launch(W * .7, 'circle'), 2300);
+  // Giai đoạn 3: pháo hoa trái tim
+  later(() => launch(cx, 'double', cx, cy), 4200);
+  later(() => launch(W * .25, 'heart', W * .25, H * .28), 5200);
+  later(() => launch(W * .75, 'heart', W * .75, H * .3), 5600);
+  // Giai đoạn 4: chữ tỏ tình
+  later(() => typeTitle(() => {
+    $('#title').classList.add('pulse');
+    explode(cx, cy, 'double', 340, 2.3); explode(cx, cy, 'heart', 45, 1.7);
+    later(() => $('#l2').classList.add('on'), 500);
+    later(() => $('#l3').classList.add('on'), 2600);
+    later(() => $('#btns').classList.add('on'), 4000);
+  }), 7000);
+}
+
+function start() {
+  initAudio(); setSound(true);
+  $('#intro').classList.add('out');
+  $('#snd').style.display = 'block';
+  document.body.classList.add('night');
+  later(sequence, 600);
+}
+
+/* ============ Hiệu ứng phụ ============ */
+function floatHearts() {
+  const box = $('#intro');
+  for (let i = 0; i < (reduce ? 0 : 16); i++) {
+    const h = document.createElement('div'); h.className = 'fh'; h.textContent = ['💖', '💗', '❤️', '💜'][i % 4];
+    h.style.cssText = `left:${rand(0, 100)}%;font-size:${rand(14, 34)}px;animation-duration:${rand(9, 18)}s;animation-delay:${-rand(0, 14)}s`;
+    box.appendChild(h);
+  }
+}
+function tapHeart(x, y) {
+  for (let i = 0; i < 3; i++) {
+    const h = document.createElement('div'); h.className = 'tap'; h.textContent = ['💖', '💗', '💕'][i];
+    h.style.left = x + 'px'; h.style.top = y + 'px'; h.style.setProperty('--dx', rand(-40, 40) + 'px');
+    document.body.appendChild(h); setTimeout(() => h.remove(), 1500);
+  }
+}
+let toastT;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 4500);
+}
+let mi = 0;
+
+/* ============ Khởi tạo & sự kiện ============ */
+function init() {
+  $('#i1').textContent = CONFIG.intro1; $('#i2').textContent = CONFIG.intro2; $('#go').textContent = CONFIG.button;
+  $('#l2').textContent = CONFIG.line2; $('#l3').textContent = CONFIG.line3;
+  buildTitle(); resize(); floatHearts(); loop();
+  addEventListener('resize', resize);
+  $('#go').addEventListener('click', start);
+  $('#replay').addEventListener('click', sequence);
+  $('#msg').addEventListener('click', () => { toast(CONFIG.messages[mi++ % CONFIG.messages.length]); explode(rand(W * .2, W * .8), rand(H * .15, H * .35), 'heart', rand(300, 360)); });
+  $('#snd').addEventListener('click', () => setSound(!soundOn));
+  // Bấm vào chữ: vòng trái tim bung ra
+  $('#title').addEventListener('click', e => {
+    const m = Math.min(W, H) * .0005;
+    for (let i = 0; i < 90; i++) { const p = heartPt(i / 90 * 6.283); addP(e.clientX, e.clientY, p.x * m * 1.1, p.y * m * 1.1, CONFIG.hues[i % 6], { fr: .955, g: .01, decay: .01, l: 75 }); }
+    sfxChime(2);
+  });
+  // Vệt sáng chuột & chạm màn hình
+  addEventListener('pointermove', e => { if (active && e.pointerType === 'mouse') addP(e.clientX, e.clientY, rand(-.5, .5), rand(-.5, .5), rand(300, 360), { size: 1.6, decay: .04, g: 0, l: 80 }); });
+  addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse' && active) tapHeart(e.clientX, e.clientY); });
+}
+window.addEventListener('error', e => console.error('Lỗi:', e.message));
+init();
+</script>
+</body>
+</html>
